@@ -1,4 +1,5 @@
 from fastapi import FastAPI,HTTPException,Depends,Query
+from fastapi.middleware.cors import CORSMiddleware  
 from sqlalchemy.orm import Session
 from database import engine,Base,get_db
 import models
@@ -12,14 +13,22 @@ app = FastAPI()
 
 Base.metadata.create_all(engine)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # React app origin
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
-@app.get("/home")
-async def home():
-    try:
-        print("Yes It is Ok")
-        return {"message":"Success"}
-    except Exception as e:
-        raise HTTPException(status_code = 500, detail = "Error on ")
+
+# @app.get("/home")
+# async def home():
+#     try:
+#         print("Yes It is Ok")
+#         return {"message":"Success"}
+#     except Exception as e:
+#         raise HTTPException(status_code = 500, detail = "Error on ")
 
 
 
@@ -107,11 +116,11 @@ def get_expenses(
     try:
         query = db.query(Expense)
 
-        # 🔹 OPTIONAL filter by category
+        
         if category_id:
             query = query.filter(Expense.category_id == category_id)
 
-        # 🔹 OPTIONAL sorting
+    
         if sort == "newest":
             query = query.order_by(desc(Expense.date))
         elif sort == "oldest":
